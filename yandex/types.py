@@ -18,7 +18,7 @@ class JsonDeserializable(object):
 
 
 class User(JsonDeserializable, Dictionaryable, JsonSerializable):  # noqa
-    def __init__(self, login: str, id: str, display_name: str = '', robot: bool = False):
+    def __init__(self, login: str, id: str = "", display_name: str = "", robot: bool = False):
         self.id = id
         self.display_name = display_name
         self.login = login
@@ -113,7 +113,7 @@ class Chat(JsonDeserializable, Dictionaryable, JsonSerializable):  # noqa
             "chat_id": self.chat_id,
             "name": self.name,
             "description": self.description,
-            "avatar_url": self.avatar_url,
+            # "avatar_url": self.avatar_url,
             "members": [member.to_dict() for member in self.members],
             "admins": [admin.to_dict() for admin in self.admins],
             "subscribers": self.subscribers,

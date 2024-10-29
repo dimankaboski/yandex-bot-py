@@ -7,6 +7,14 @@ from yandex.types import Button, Poll, Chat
 BASE_URL = "https://botapi.messenger.yandex.net/bot/v1"
 
 
+def clear_kwargs_values(new_data):
+    data = {}
+    for key, value in new_data.items():
+        if value:
+            data.update({key:value})
+    return data
+
+
 def _make_request(token: str, method_url: str, method: str, data: dict = None):
     headers = {
         "Authorization": f"OAuth {token}",
@@ -68,30 +76,30 @@ def send_message(token: str,
     return data['message_id']
 
 
-def create_poll(token: str, login, poll: Poll, **kwargs):
-    data = {'login': login}
-    data.update(**kwargs)
+def create_poll(token: str, poll: Poll, **kwargs):
+    data = dict()
     data.update(poll.to_dict())
-    data = _make_request(token, "/messages/createPoll/","POST", data)
+    data.update(clear_kwargs_values(kwargs))
+    data = _make_request(token, "/messages/createPoll/", "POST", data)
     return data['message_id']
 
 
-def get_poll_results(token: str, login, message_id):
+def get_poll_results(token: str, message_id: int, **kwargs):
     data = {
-        "login": login,
         "message_id": int(message_id)
     }
-    data = _make_request(token, f"/polls/getResults/", "GET", data)
+    data.update(clear_kwargs_values(kwargs))
+    data = _make_request(token, "/polls/getResults/", "GET", data)
     return data
 
 
-def get_poll_voters(token: str, login, message_id, answer_id):
+def get_poll_voters(token: str, message_id:int, answer_id: int, **kwargs):
     data = {
-        "login": login,
         "message_id": message_id,
         "answer_id": answer_id
     }
-    data = _make_request(token, f"/polls/getVoters/", "GET", data)
+    data.update(clear_kwargs_values(kwargs))
+    data = _make_request(token, "/polls/getVoters/", "GET", data)
     return data
 
 
@@ -100,9 +108,15 @@ def chat_create(token: str, chat: Chat, **kwargs):
     data.update(**kwargs)
     data.update(chat.to_dict())
     data = _make_request(token, "/chats/create/","POST", data)
+    return data["chat_id"]
+
+
+def change_chat_users(token: str, data: dict):
+    data = _make_request(token, "/chats/updateMembers/","POST", data)
     return data
 
-def _get_file(token: str, file_id: str, file_path: str) -> str:
+
+def get_file(token: str, file_id: str, file_path: str) -> str:
     if not os.path.exists(file_path):
         raise Exception("Path not found")
     _download_file(token, method_url="/messages/getFile/", method="GET", file_id=file_id, file_path=file_path)

@@ -4,9 +4,8 @@ from time import sleep
 import threading
 
 from yandex.types import User, Message, Chat, Button, Poll
-from yandex.apihelpers import get_updates, send_message, create_poll, get_poll_results, get_poll_voters, chat_create
+import yandex.apihelpers as api
 from yandex.types import User, Message, Chat, Button, File, Image
-from yandex.apihelpers import get_updates, send_message, _get_file
 from yandex.handlers import MemoryStepHandler
 
 
@@ -50,8 +49,7 @@ class Client:
             raise Exception
 
     def _get_updates(self):
-        data = get_updates(self.api_key, self.last_update_id + 1)
-        print(data)
+        data = api.get_updates(self.api_key, self.last_update_id + 1)
         for json_message in data:
             self.last_update_id = json_message["update_id"]
             handler = self._get_handler_for_message(json_message)
@@ -113,7 +111,7 @@ class Client:
             inline_keyboard = []
         if inline_keyboard:
             inline_keyboard = [btn.to_dict() for btn in inline_keyboard]
-        data = send_message(
+        data = api.send_message(
             self.api_key,
             login,
             text,
@@ -125,57 +123,113 @@ class Client:
         )
         return data
 
-    def _create_poll(
+    def create_poll(
         self,
-        login: str,
         poll: Poll,
+        chat_id: str = None,
+        login: str = None,
         disable_notification: bool = False,
         important: bool = False,
         disable_web_page_preview: bool = False,
-    ):
-        data = create_poll(
+    ) -> int:
+        """
+        The method allows you to create surveys.
+        url: https://botapi.messenger.yandex.net/bot/v1/messages/createPoll/
+
+        :param Poll poll: Poll class
+        :param str login: User login who will receive the message 
+        :param str chat_id: Group chat ID where to send a message
+        :param message_id: Chat class
+        :param answer_id: The number of the answer option for which voters are requested
+        :return int: message_id contains information about the sent survey message.
+        """
+        if not chat_id and not login:
+            raise Exception("Please provide login or chat_id")
+        data = api.create_poll(
             self.api_key,
-            login,
-            poll=poll,
+            poll,
+            login=login,
+            chat_id=chat_id,
             disable_notification=disable_notification,
             important=important,
             disable_web_page_preview=disable_web_page_preview,
         )
         return data
     
-    def _get_poll_results(self, login: str, message_id: int):
-        data = get_poll_results(self.api_key, login, message_id)
+    def get_poll_results(self, message_id: int,
+                         chat_id: str = None,
+                         login: str = None,
+                         invite_hash: str = None) -> dict:
+        """
+        The method allows you to obtain the results of a user survey in a chat: the total number of voters and the number of votes cast for each answer option.
+        url: https://botapi.messenger.yandex.net/bot/v1/polls/getResults/
+
+        :param int message_id: Chat poll message ID
+        :param str login: User login who will receive the message 
+        :param str chat_id: Group chat ID where to send a message 
+        :param str invite_hash: Hash of the invitation link if the bot is not already in the chat 
+        :return dict: The result of a successful request is a response with code 200 and a JSON body containing information about the survey results.
+        """
+        if not chat_id and not login:
+            raise Exception("Please provide login or chat_id")
+        data = api.get_poll_results(self.api_key, message_id, chat_id=chat_id,
+                                    login=login, invite_hash=invite_hash)
         return data
     
-    def _get_poll_voters(self, login: str, message_id: int, answer_id: int):
-        data = get_poll_voters(self.api_key, login, message_id, answer_id)
+    def get_poll_voters(self, message_id: int, answer_id: int,
+                        login: str = None, chat_id: str = None,
+                        invite_hash: str = None, limit: int = None,
+                        cursor: int = None) -> dict:
+        """
+        The method allows you to obtain the number and list of survey participants who voted for a certain answer option.
+        url: https://botapi.messenger.yandex.net/bot/v1/polls/getVoters/
+
+        :param int message_id: Chat poll message ID
+        :param int answer_id: The number of the answer option for which voters are requested
+        :param str login: User login who will receive the message 
+        :param str chat_id: Group chat ID where to send a message 
+        :param str invite_hash: Hash of the invitation link if the bot is not already in the chat 
+        :param int limit: The maximum number of votes that will be received in response to a request 
+        :param int cursor: Voice ID, starting from which the list of voters will be formed 
+        :return dict: The result of a successful request is a response with code 200 and a body with JSON containing a list of voters
+        """
+        if not chat_id and not login:
+            raise Exception("Please provide login or chat_id")
+        data = api.get_poll_voters(self.api_key, message_id, answer_id, login=login,
+                                   chat_id=chat_id, invite_hash=invite_hash,
+                                   limit=limit, cursor=cursor)
         return data
     
-    def _chat_create(self, chat: Chat):
-        data = chat_create(self.api_key, chat)
+    def create_chat(self, chat: Chat, is_channel: bool = False) -> int:
+        """
+        Method creates a chat or channel
+        url: https://yandex.ru/dev/messenger/doc/ru/api-requests/chat-create
+
+        :param chat: Chat class
+        :param is_channel: Create a chat or channel
+        :return int: Created chat ID
+        """
+        data = api.chat_create(self.api_key, chat, is_channel=is_channel)
+        return data
+
+    def change_chat_users(self, chat_id: str, members: [User] = None,
+                          admins: [User] = None, subscribers: [User] = None,
+                          remove: [User] = None):
+        data = {"chat_id": chat_id}
+        if members:
+            data.update(members=[{"login": user.login} for user in members])
+        if admins:
+            data.update(admins=[{"login": user.login} for user in admins])
+        if subscribers:
+            data.update(subscribers=[{"login": user.login} for user in subscribers])
+        if remove:
+            data.update(remove=[{"login": user.login} for user in remove])
+        data = api.change_chat_users(self.api_key, data)
         return data
 
     def send_file(self, login): ...
 
     def get_file(self, file: File, save_path: str) -> str:
         file_path = f"{save_path}/{file.name}"
-        data = _get_file(self.api_key, file.id, file_path)
+        data = api.get_file(self.api_key, file.id, file_path)
         return data
-
-    def create_chat(self, chat: Chat, is_channel: bool = False) -> str:
-        """
-        Method creates a chat or channel
-        url: https://yandex.ru/dev/messenger/doc/ru/api-requests/chat-create
-        :param chat: Chat class
-        :param is_channel: Create a chat or channel
-        :return: chat_id
-        """
-        method = "/chats/create/"
-        try:
-            r = requests.post(
-                BASE_URL + method, headers=self.headers, data=chat.to_json()
-            )
-            data = r.json()
-        except Exception as e:
-            return "error"
-        return data.get("chat_id")
