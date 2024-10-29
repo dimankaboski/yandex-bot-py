@@ -2,7 +2,7 @@ import json
 import os
 
 from requests import Session
-from yandex.types import Button, Poll, Chat
+from yandex_bot.types import Button, Poll, Chat
 
 BASE_URL = "https://botapi.messenger.yandex.net/bot/v1"
 

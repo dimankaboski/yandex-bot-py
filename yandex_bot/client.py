@@ -3,10 +3,10 @@ import requests
 from time import sleep
 import threading
 
-from yandex.types import User, Message, Chat, Button, Poll
-import yandex.apihelpers as api
-from yandex.types import User, Message, Chat, Button, File, Image
-from yandex.handlers import MemoryStepHandler
+from yandex_bot.types import User, Message, Chat, Button, Poll
+import yandex_bot.apihelpers as api
+from yandex_bot.types import User, Message, Chat, Button, File, Image
+from yandex_bot.handlers import MemoryStepHandler
 
 
 class Client:

@@ -2,8 +2,8 @@ import os
 
 from dotenv import load_dotenv
 
-from yandex.client import Client
-from yandex.types import Button, Poll, Chat, User, Message
+from yandex_bot.client import Client
+from yandex_bot.types import Button, Poll, Chat, User, Message
 
 load_dotenv()
 
