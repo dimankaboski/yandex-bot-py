@@ -18,7 +18,7 @@ class JsonDeserializable(object):
 
 
 class User(JsonDeserializable, Dictionaryable, JsonSerializable):  # noqa
-    def __init__(self, login: str, id: str = "", display_name: str = "", robot: bool = False):
+    def __init__(self, login: str = "", id: str = "", display_name: str = "", robot: bool = False):
         self.id = id
         self.display_name = display_name
         self.login = login
@@ -74,6 +74,7 @@ class Image(JsonDeserializable, Dictionaryable, JsonSerializable):
 class Message(JsonDeserializable, Dictionaryable, JsonSerializable): # noqa
     def __init__(self, message_id: str, timestamp: str, text: str, user: User, pictures: [Image] = None, attachment: File = None, **kwargs):
         self.message_id = message_id
+        self.callback_data = None
         self.timestamp = timestamp
         self.text = text
         self.user = user
@@ -83,6 +84,8 @@ class Message(JsonDeserializable, Dictionaryable, JsonSerializable): # noqa
         else:
             self.images = pictures
         self.file = attachment
+        if kwargs.get("callback_data"):
+            self.callback_data = kwargs.get("callback_data")
 
     def __repr__(self):
         return f"Message from {self.user.login} at {self.timestamp}, File: {self.file}, Images: {self.images}"

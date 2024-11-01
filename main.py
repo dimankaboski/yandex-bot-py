@@ -2,8 +2,7 @@ import os
 
 from dotenv import load_dotenv
 
-from yandex_bot.client import Client
-from yandex_bot.types import Button, Poll, Chat, User, Message
+from yandex_bot import Client, Button, Poll, Chat, User, Message
 
 load_dotenv()
 
@@ -12,7 +11,7 @@ bot = Client(os.getenv("YANDEX_BOT_KEY"))
 
 @bot.on_message(phrase="/start")
 def command_start(message):
-    btn = Button(text="What is your name", phrase="/name")
+    btn = Button(text="Test", phrase="/test", callback_data={"data": 31312, "data2": "fwafawfa"})
     bot.send_message(message.user.login, "Select an action", inline_keyboard=[btn])
 
 
@@ -22,10 +21,9 @@ def command_start(message):
     bot.register_next_step_handler(message.user.login, type_your_name)
 
 
-@bot.on_message(phrase="/createpoll")
+@bot.on_message(phrase="/test")
 def command_poll(message: Message):
-    poll = Poll(title="Question", answers=["Answer 1", "Answer 2", "Answer 3"], max_choices=1, is_anonymous=True)
-    message_id = bot.create_poll(poll=poll, login=message.user.login)
+    print(message.callback_data)
 
 
 @bot.on_message(phrase="/getpollresults")

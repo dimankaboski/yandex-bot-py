@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "yandex-bot-py"
-version = "1.1"
+version = "1.0"
 description = "Python Yandex messenger bot api"
 authors = [
     {name = "dimankaboski", email = "dimankab@gmail.com"},

@@ -12,7 +12,7 @@ pip install yandex-bot-py
 #### Example
 
 ``` Python
-TODO: add imports
+from yandex_bot import Client, Button, Message, User
 
 bot = Client(os.getenv("YANDEX_BOT_KEY"))
 
