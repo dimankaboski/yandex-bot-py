@@ -52,26 +52,22 @@ def _download_file(token: str, method_url: str, method: str, file_id: str, file_
 
 def _check_result(result):
     if result.status_code != 200:
-        print(result)
-        print(result.json())
-        raise Exception("Bad request")
+        raise Exception(f"Bad request: {result.json()}")
     return result.json()
 
 
 def get_updates(token: str, last_update_id: int = 0):
-    data = _make_request(token, f"/messages/getUpdates?offset={last_update_id}&limit=1", "GET")
+    data = _make_request(token, f"/messages/getUpdates?offset={last_update_id}&limit=5", "GET")
     return data['updates']
 
 
 def send_message(token: str,
-                 login: str,
                  text: str,
                  **kwargs):
     data = {
-        "login": login,
         "text": text
     }
-    data.update(**kwargs)
+    data.update(clear_kwargs_values(kwargs))
     data = _make_request(token, "/messages/sendText/", "POST", data)
     return data['message_id']
 
@@ -122,3 +118,19 @@ def get_file(token: str, file_id: str, file_path: str) -> str:
     _download_file(token, method_url="/messages/getFile/", method="GET", file_id=file_id, file_path=file_path)
     return file_path
 
+
+def delete_message(token: str, message_id: int, **kwargs):
+    data = {
+        "message_id": message_id
+    }
+    data.update(clear_kwargs_values(kwargs))
+    data = _make_request(token, "/messages/delete/","POST", data)
+    return data["chat_id"]
+
+
+def get_user_link(token: str, login: str):
+    data = {
+        "login": login
+    }
+    data = _make_request(token, "/users/getUserLink/", "GET", data)
+    return data
