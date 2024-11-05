@@ -19,17 +19,17 @@ bot = Client(os.getenv("YANDEX_BOT_KEY"))
 @bot.on_message(phrase="/start")
 def command_start(message):
     btn = Button(text="What is your name", phrase="/name")
-    bot.send_message(message.user.login, "Select an action", inline_keyboard=[btn])
+    bot.send_message("Select an action", login=message.user.login, inline_keyboard=[btn])
 
 
 @bot.on_message(phrase="/name")
 def command_start(message):
-    bot.send_message(message.user.login, "Type your name")
+    bot.send_message("Type your name", login=message.user.login)
     bot.register_next_step_handler(message.user.login, type_your_name)
 
 
 def type_your_name(message):
-    bot.send_message(message.user.login, f"Your name is {message.text}")
+    bot.send_message(f"Your name is {message.text}", login=message.user.login)
 
 
 bot.run()
@@ -43,13 +43,17 @@ Specify in the parameters `phrase` to handle messages that begin with the specif
 ``` Python
 @bot.on_message(phrase="/start")
 def command_start(message):
-    bot.send_message(message.user.login, f"Hello, {message.user.login}")
+    bot.send_message(f"Hello, {message.user.login}", login=message.user.login)
 ```
 
 To send a message use `bot.send_message`. You can provide `chat_id` or `login` there.
 
 ```Python
-bot.send_message(message.user.login, "Hello, I'm bot")
+bot.send_message("Hello, I'm bot", login=message.user.login)
+```
+
+```Python
+bot.send_message("Hello, I'm bot", chat_id="12512571242")
 ```
 
 `inline_keyboard` is used to add buttons to a chat with a user. Just create a Button class and provide `text` (The text on the button).
@@ -57,7 +61,7 @@ You can provide `phrase` for fast binding to the processing function, or you can
 
 ```Python
 btn = Button(text="My button", phrase="/data", callback_data={"foo": "bar", "bar": "foo"})
-bot.send_message(message.user.login, "Select an action", inline_keyboard=[btn])
+bot.send_message("Select an action", login=message.user.login, inline_keyboard=[btn])
 ```
 
 ### Handling next step
@@ -68,9 +72,9 @@ For example, to wait for a response from a user to a question, you can use `bot.
 ```Python
 @bot.on_message(phrase="/name")
 def get_user_name(message):
-    bot.send_message(message.user.login, "Type your name")
+    bot.send_message("Type your name", login=message.user.login)
     bot.register_next_step_handler(message.user.login, type_your_name)
 
 def type_your_name(message):
-    bot.send_message(message.user.login, f"Your name is {message.text}")
+    bot.send_message(f"Your name is {message.text}", login=message.user.login)
 ```
