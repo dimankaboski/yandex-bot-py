@@ -15,33 +15,33 @@ def clear_kwargs_values(new_data):
     return data
 
 
-def _make_request(token: str, method_url: str, method: str, data: dict = None):
+def _make_request(client, method_url: str, method: str, data: dict = None):
     headers = {
-        "Authorization": f"OAuth {token}",
+        "Authorization": f"OAuth {client.api_key}",
     }
     s = Session()
-    if not token:
+    if not client.api_key:
         raise Exception("Token is missing")
     request_url = f"{BASE_URL}{method_url}"
     if method == "GET":
-       resp = s.request(method, request_url, headers=headers, params=data) 
+       resp = s.request(method, request_url, headers=headers, params=data, verify=client.ssl_verify) 
     elif method == "POST":
         if data:
             data = json.dumps(data)
         headers.update({"Content-Type": "application/json"})
-        resp = s.request(method, request_url, headers=headers, data=data)
+        resp = s.request(method, request_url, headers=headers, data=data, verify=client.ssl_verify)
     data = _check_result(resp)
     s.close()
     return data
 
 
-def _download_file(token: str, method_url: str, method: str, file_id: str, file_path: str):
+def _download_file(client, method_url: str, method: str, file_id: str, file_path: str):
     request_url = f"{BASE_URL}{method_url}"
     headers = {
-        "Authorization": f"OAuth {token}"
+        "Authorization": f"OAuth {client.api_key}"
     }
     s = Session()
-    r = s.request(method, request_url, headers=headers, params={"file_id": file_id}, stream=True)
+    r = s.request(method, request_url, headers=headers, params={"file_id": file_id}, stream=True, verify=client.ssl_verify)
     if r.status_code == 200:
         with open(file_path, 'wb') as f:
             for chunk in r:
@@ -56,81 +56,81 @@ def _check_result(result):
     return result.json()
 
 
-def get_updates(token: str, last_update_id: int = 0):
-    data = _make_request(token, f"/messages/getUpdates?offset={last_update_id}&limit=5", "GET")
+def get_updates(client, last_update_id: int = 0):
+    data = _make_request(client, f"/messages/getUpdates?offset={last_update_id}&limit=5", "GET")
     return data['updates']
 
 
-def send_message(token: str,
+def send_message(client,
                  text: str,
                  **kwargs):
     data = {
         "text": text
     }
     data.update(clear_kwargs_values(kwargs))
-    data = _make_request(token, "/messages/sendText/", "POST", data)
+    data = _make_request(client, "/messages/sendText/", "POST", data)
     return data['message_id']
 
 
-def create_poll(token: str, poll: Poll, **kwargs):
+def create_poll(client, poll: Poll, **kwargs):
     data = dict()
     data.update(poll.to_dict())
     data.update(clear_kwargs_values(kwargs))
-    data = _make_request(token, "/messages/createPoll/", "POST", data)
+    data = _make_request(client, "/messages/createPoll/", "POST", data)
     return data['message_id']
 
 
-def get_poll_results(token: str, message_id: int, **kwargs):
+def get_poll_results(client, message_id: int, **kwargs):
     data = {
         "message_id": int(message_id)
     }
     data.update(clear_kwargs_values(kwargs))
-    data = _make_request(token, "/polls/getResults/", "GET", data)
+    data = _make_request(client, "/polls/getResults/", "GET", data)
     return data
 
 
-def get_poll_voters(token: str, message_id:int, answer_id: int, **kwargs):
+def get_poll_voters(client, message_id:int, answer_id: int, **kwargs):
     data = {
         "message_id": message_id,
         "answer_id": answer_id
     }
     data.update(clear_kwargs_values(kwargs))
-    data = _make_request(token, "/polls/getVoters/", "GET", data)
+    data = _make_request(client, "/polls/getVoters/", "GET", data)
     return data
 
 
-def chat_create(token: str, chat: Chat, **kwargs):
+def chat_create(client, chat: Chat, **kwargs):
     data = {}
     data.update(**kwargs)
     data.update(chat.to_dict())
-    data = _make_request(token, "/chats/create/","POST", data)
+    data = _make_request(client, "/chats/create/","POST", data)
     return data["chat_id"]
 
 
-def change_chat_users(token: str, data: dict):
-    data = _make_request(token, "/chats/updateMembers/","POST", data)
+def change_chat_users(client, data: dict):
+    data = _make_request(client, "/chats/updateMembers/","POST", data)
     return data
 
 
-def get_file(token: str, file_id: str, file_path: str) -> str:
+def get_file(client, file_id: str, file_path: str) -> str:
     if not os.path.exists(file_path):
         raise Exception("Path not found")
-    _download_file(token, method_url="/messages/getFile/", method="GET", file_id=file_id, file_path=file_path)
+    _download_file(client, method_url="/messages/getFile/", method="GET", file_id=file_id, file_path=file_path)
     return file_path
 
 
-def delete_message(token: str, message_id: int, **kwargs):
+def delete_message(client, message_id: int, **kwargs):
     data = {
         "message_id": message_id
     }
     data.update(clear_kwargs_values(kwargs))
-    data = _make_request(token, "/messages/delete/","POST", data)
+    data = _make_request(client, "/messages/delete/","POST", data)
     return data["chat_id"]
 
 
-def get_user_link(token: str, login: str):
+def get_user_link(client, login: str):
     data = {
         "login": login
     }
-    data = _make_request(token, "/users/getUserLink/", "GET", data)
+    data = _make_request(client, "/users/getUserLink/", "GET", data)
     return data
