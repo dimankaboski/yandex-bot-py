@@ -10,12 +10,13 @@ from yandex_bot.handlers import MemoryStepHandler
 
 
 class Client:
-    def __init__(self, api_key: str):
+    def __init__(self, api_key: str, ssl_verify: bool = True):
         self.api_key = api_key
         self.handlers = []
         self.next_step_handler = MemoryStepHandler()
         self.is_closed = False
         self.last_update_id = 0
+        self.ssl_verify = ssl_verify
 
     def _build_handler_dict(self, handler, phrase):
         return {"function": handler, "phrase": phrase}
@@ -45,7 +46,7 @@ class Client:
         handler(message)
 
     def _get_updates(self):
-        data = api.get_updates(self.api_key, self.last_update_id + 1)
+        data = api.get_updates(self, self.last_update_id + 1)
         for json_message in data:
             self.last_update_id = json_message["update_id"]
             handler = self._get_handler_for_message(json_message)
@@ -113,7 +114,7 @@ class Client:
         if inline_keyboard:
             inline_keyboard = [btn.to_dict() for btn in inline_keyboard]
         data = api.send_message(
-            self.api_key,
+            self,
             text,
             login=login,
             chat_id=chat_id,
@@ -148,7 +149,7 @@ class Client:
         if not chat_id and not login:
             raise Exception("Please provide login or chat_id")
         data = api.create_poll(
-            self.api_key,
+            self,
             poll,
             login=login,
             chat_id=chat_id,
@@ -178,7 +179,7 @@ class Client:
         if not chat_id and not login:
             raise Exception("Please provide login or chat_id")
         data = api.get_poll_results(
-            self.api_key,
+            self,
             message_id,
             chat_id=chat_id,
             login=login,
@@ -212,7 +213,7 @@ class Client:
         if not chat_id and not login:
             raise Exception("Please provide login or chat_id")
         data = api.get_poll_voters(
-            self.api_key,
+            self,
             message_id,
             answer_id,
             login=login,
@@ -232,7 +233,7 @@ class Client:
         :param is_channel: Create a chat or channel
         :return int: Created chat ID
         """
-        data = api.chat_create(self.api_key, chat, is_channel=is_channel)
+        data = api.chat_create(self, chat, is_channel=is_channel)
         return data
 
     def change_chat_users(
@@ -252,24 +253,24 @@ class Client:
             data.update(subscribers=[{"login": user.login} for user in subscribers])
         if remove:
             data.update(remove=[{"login": user.login} for user in remove])
-        data = api.change_chat_users(self.api_key, data)
+        data = api.change_chat_users(self, data)
         return data
 
     def send_file(self, login): ...
 
     def get_file(self, file: File, save_path: str) -> str:
         file_path = f"{save_path}/{file.name}"
-        data = api.get_file(self.api_key, file.id, file_path)
+        data = api.get_file(self, file.id, file_path)
         return data
 
     def delete_message(self, message_id: int, login: str = "", chat_id: str = ""):
         if not chat_id and not login:
             raise Exception("Please provide login or chat_id")
         data = api.delete_message(
-            self.api_key, message_id, login=login, chat_id=chat_id
+            self, message_id, login=login, chat_id=chat_id
         )
         return data
 
     def get_user_link(self, login: str):
-        data = api.get_user_link(self.api_key, login=login)
+        data = api.get_user_link(self, login=login)
         return data
