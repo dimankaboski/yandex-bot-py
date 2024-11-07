@@ -67,7 +67,7 @@ class Client:
         if not first_message_word:
             return None
         if json_message.get("callback_data") and json_message.get("callback_data").get(
-            "phrase"
+                "phrase"
         ):
             first_message_word = json_message.get("callback_data").get("phrase")
         for handler in self.handlers:
@@ -97,15 +97,15 @@ class Client:
         return decorator
 
     def send_message(
-        self,
-        text: str,
-        login: str = "",
-        chat_id: str = "",
-        reply_message_id: int = 0,
-        disable_notification: bool = False,
-        important: bool = False,
-        disable_web_page_preview: bool = False,
-        inline_keyboard: [Button] = None,
+            self,
+            text: str,
+            login: str = "",
+            chat_id: str = "",
+            reply_message_id: int = 0,
+            disable_notification: bool = False,
+            important: bool = False,
+            disable_web_page_preview: bool = False,
+            inline_keyboard: [Button] = None,
     ):
         if not chat_id and not login:
             raise Exception("Please provide login or chat_id")
@@ -127,13 +127,13 @@ class Client:
         return data
 
     def create_poll(
-        self,
-        poll: Poll,
-        chat_id: str = None,
-        login: str = None,
-        disable_notification: bool = False,
-        important: bool = False,
-        disable_web_page_preview: bool = False,
+            self,
+            poll: Poll,
+            chat_id: str = None,
+            login: str = None,
+            disable_notification: bool = False,
+            important: bool = False,
+            disable_web_page_preview: bool = False,
     ) -> int:
         """
         The method allows you to create surveys.
@@ -160,11 +160,11 @@ class Client:
         return data
 
     def get_poll_results(
-        self,
-        message_id: int,
-        chat_id: str = None,
-        login: str = None,
-        invite_hash: str = None,
+            self,
+            message_id: int,
+            chat_id: str = None,
+            login: str = None,
+            invite_hash: str = None,
     ) -> dict:
         """
         The method allows you to obtain the results of a user survey in a chat: the total number of voters and the number of votes cast for each answer option.
@@ -188,14 +188,14 @@ class Client:
         return data
 
     def get_poll_voters(
-        self,
-        message_id: int,
-        answer_id: int,
-        login: str = None,
-        chat_id: str = None,
-        invite_hash: str = None,
-        limit: int = None,
-        cursor: int = None,
+            self,
+            message_id: int,
+            answer_id: int,
+            login: str = None,
+            chat_id: str = None,
+            invite_hash: str = None,
+            limit: int = None,
+            cursor: int = None,
     ) -> dict:
         """
         The method allows you to obtain the number and list of survey participants who voted for a certain answer option.
@@ -237,12 +237,12 @@ class Client:
         return data
 
     def change_chat_users(
-        self,
-        chat_id: str,
-        members: [User] = None,
-        admins: [User] = None,
-        subscribers: [User] = None,
-        remove: [User] = None,
+            self,
+            chat_id: str,
+            members: [User] = None,
+            admins: [User] = None,
+            subscribers: [User] = None,
+            remove: [User] = None,
     ):
         data = {"chat_id": chat_id}
         if members:
@@ -255,8 +255,6 @@ class Client:
             data.update(remove=[{"login": user.login} for user in remove])
         data = api.change_chat_users(self, data)
         return data
-
-    def send_file(self, login): ...
 
     def get_file(self, file: File, save_path: str) -> str:
         file_path = f"{save_path}/{file.name}"
@@ -273,4 +271,12 @@ class Client:
 
     def get_user_link(self, login: str):
         data = api.get_user_link(self, login=login)
+        return data
+
+    def send_file(self, path: str, login: str = "", chat_id: str = ""):
+        data = api.send_file(self, document=path, login=login, chat_id=chat_id)
+        return data
+
+    def send_image(self, path: str, login: str = "", chat_id: str = ""):
+        data = api.send_image(self, image=path, login=login, chat_id=chat_id)
         return data

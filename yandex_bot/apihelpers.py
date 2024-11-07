@@ -50,6 +50,20 @@ def _download_file(client, method_url: str, method: str, file_id: str, file_path
         raise Exception(r.json())
 
 
+def _make_file_request(client, method_url: str, data: dict):
+    headers = {
+        "Authorization": f"OAuth {client.api_key}",
+        "content-type": "multipart/form-data"
+    }
+    s = Session()
+    if not client.api_key:
+        raise Exception("Token is missing")
+    request_url = f"{BASE_URL}{method_url}"
+    resp = s.request("POST", request_url, headers=headers, data=data, verify=client.ssl_verify)
+    data = _check_result(resp)
+    s.close()
+    return data
+
 def _check_result(result):
     if result.status_code != 200:
         raise Exception(f"Bad request: {result.json()}")
@@ -133,4 +147,22 @@ def get_user_link(client, login: str):
         "login": login
     }
     data = _make_request(client, "/users/getUserLink/", "GET", data)
+    return data
+
+
+def send_file(client, **kwargs):
+    data = {}
+    data.update(clear_kwargs_values(kwargs))
+    file_path = os.path.join(data['document'])
+    data['document'] = open(file_path, "rb").read()
+    data = _make_file_request(client, method_url="/messages/sendFile/", data=data)
+    return data
+
+
+def send_image(client, **kwargs):
+    data = {}
+    data.update(clear_kwargs_values(kwargs))
+    file_path = os.path.join(data['image'])
+    data['image'] = open(file_path, "rb").read()
+    data = _make_file_request(client, method_url="/messages/sendImage/", data=data)
     return data
