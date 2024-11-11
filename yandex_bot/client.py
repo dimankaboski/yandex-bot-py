@@ -10,13 +10,14 @@ from yandex_bot.handlers import MemoryStepHandler
 
 
 class Client:
-    def __init__(self, api_key: str, ssl_verify: bool = True):
+    def __init__(self, api_key: str, ssl_verify: bool = True, timeout: int = 1):
         self.api_key = api_key
         self.handlers = []
         self.next_step_handler = MemoryStepHandler()
         self.is_closed = False
         self.last_update_id = 0
         self.ssl_verify = ssl_verify
+        self.timeout = timeout
 
     def _build_handler_dict(self, handler, phrase):
         return {"function": handler, "phrase": phrase}
@@ -81,7 +82,7 @@ class Client:
                 t = threading.Thread(
                     target=self._get_updates(), name="bot_polling", daemon=True
                 ).start()
-                sleep(1)
+                sleep(self.timeout)
         except KeyboardInterrupt:
             print("Exit Bot. Good bye.")
             self.is_closed = True
