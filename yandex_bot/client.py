@@ -44,7 +44,7 @@ class Client:
         return message
 
     def _run_handler(self, handler, message: Message):
-        handler(message)
+        return handler(message)
 
     def _get_updates(self):
         data = api.get_updates(self, self.last_update_id + 1)
@@ -87,7 +87,7 @@ class Client:
             print("Exit Bot. Good bye.")
             self.is_closed = True
 
-    def register_next_step_handler(self, user_login: int, callback):
+    def register_next_step_handler(self, user_login: str, callback):
         self.next_step_handler.register_handler(user_login, callback)
 
     def on_message(self, phrase):
