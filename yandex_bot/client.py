@@ -274,9 +274,17 @@ class Client:
         return data
 
     def send_file(self, path: str, login: str = "", chat_id: str = ""):
+        if login:
+            login = (None, login)
+        if chat_id:
+            chat_id = (None, chat_id)
         data = api.send_file(self, document=path, login=login, chat_id=chat_id)
         return data
 
     def send_image(self, path: str, login: str = "", chat_id: str = ""):
+        if login:
+            login = (None, login)
+        if chat_id:
+            chat_id = (None, chat_id)
         data = api.send_image(self, image=path, login=login, chat_id=chat_id)
         return data
