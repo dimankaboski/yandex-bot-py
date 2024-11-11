@@ -137,8 +137,8 @@ def delete_message(client, message_id: int, **kwargs):
         "message_id": message_id
     }
     data.update(clear_kwargs_values(kwargs))
-    data = _make_request(client, "/messages/delete/","POST", data)
-    return data["chat_id"]
+    data = _make_request(client, "/messages/delete/", "POST", data)
+    return data["message_id"]
 
 
 def get_user_link(client, login: str):

@@ -108,6 +108,20 @@ class Client:
             disable_web_page_preview: bool = False,
             inline_keyboard: [Button] = None,
     ):
+        """
+        The method allows you to create text messages
+        url: https://yandex.ru/dev/messenger/doc/ru/api-requests/message-send-text
+
+        :param text: The text of the message
+        :param login: User login
+        :param chat_id: Group chat ID
+        :param reply_message_id: The message ID to be answered
+        :param disable_notification: Turn off the notification
+        :param important: Is the message important
+        :param disable_web_page_preview: Disable link disclosure in a message
+        :param inline_keyboard: An array of inline buttons under the message
+        :return: message id
+        """
         if not chat_id and not login:
             raise Exception("Please provide login or chat_id")
         if inline_keyboard is None:
@@ -130,8 +144,8 @@ class Client:
     def create_poll(
             self,
             poll: Poll,
-            chat_id: str = None,
             login: str = None,
+            chat_id: str = None,
             disable_notification: bool = False,
             important: bool = False,
             disable_web_page_preview: bool = False,
@@ -141,11 +155,12 @@ class Client:
         url: https://botapi.messenger.yandex.net/bot/v1/messages/createPoll/
 
         :param Poll poll: Poll class
-        :param str login: User login who will receive the message
-        :param str chat_id: Group chat ID where to send a message
-        :param message_id: Chat class
-        :param answer_id: The number of the answer option for which voters are requested
-        :return int: message_id contains information about the sent survey message.
+        :param login: User login
+        :param chat_id: Group chat ID
+        :param disable_notification: Turn off the notification
+        :param important: Is the message important
+        :param disable_web_page_preview: Disable link disclosure in a message
+        :return: message id
         """
         if not chat_id and not login:
             raise Exception("Please provide login or chat_id")
@@ -168,14 +183,15 @@ class Client:
             invite_hash: str = None,
     ) -> dict:
         """
-        The method allows you to obtain the results of a user survey in a chat: the total number of voters and the number of votes cast for each answer option.
+        The method allows you to obtain the results of a user survey in a chat: the total number of voters and
+        the number of votes cast for each answer option.
         url: https://botapi.messenger.yandex.net/bot/v1/polls/getResults/
-
-        :param int message_id: Chat poll message ID
-        :param str login: User login who will receive the message
-        :param str chat_id: Group chat ID where to send a message
-        :param str invite_hash: Hash of the invitation link if the bot is not already in the chat
-        :return dict: The result of a successful request is a response with code 200 and a JSON body containing information about the survey results.
+        :param message_id: Chat poll message ID
+        :param login: User login who will receive the message
+        :param chat_id: Group chat ID where to send a message
+        :param invite_hash: Hash of the invitation link if the bot is not already in the chat
+        :return: The result of a successful request is a response with code 200 and a JSON body containing
+            information about the survey results.
         """
         if not chat_id and not login:
             raise Exception("Please provide login or chat_id")
@@ -202,14 +218,14 @@ class Client:
         The method allows you to obtain the number and list of survey participants who voted for a certain answer option.
         url: https://botapi.messenger.yandex.net/bot/v1/polls/getVoters/
 
-        :param int message_id: Chat poll message ID
-        :param int answer_id: The number of the answer option for which voters are requested
-        :param str login: User login who will receive the message
-        :param str chat_id: Group chat ID where to send a message
-        :param str invite_hash: Hash of the invitation link if the bot is not already in the chat
-        :param int limit: The maximum number of votes that will be received in response to a request
-        :param int cursor: Voice ID, starting from which the list of voters will be formed
-        :return dict: The result of a successful request is a response with code 200 and a body with JSON containing a list of voters
+        :param message_id: Chat poll message ID
+        :param answer_id: The number of the answer option for which voters are requested
+        :param login: User login who will receive the message
+        :param chat_id: Group chat ID where to send a message
+        :param invite_hash: Hash of the invitation link if the bot is not already in the chat
+        :param limit: The maximum number of votes that will be received in response to a request
+        :param cursor: Voice ID, starting from which the list of voters will be formed
+        :return: The result with JSON containing a list of voters
         """
         if not chat_id and not login:
             raise Exception("Please provide login or chat_id")
@@ -232,7 +248,7 @@ class Client:
 
         :param chat: Chat class
         :param is_channel: Create a chat or channel
-        :return int: Created chat ID
+        :return: Created chat ID
         """
         data = api.chat_create(self, chat, is_channel=is_channel)
         return data
@@ -245,6 +261,17 @@ class Client:
             subscribers: [User] = None,
             remove: [User] = None,
     ):
+        """
+        Method allows you to add and remove participants to the chat
+        url: https://yandex.ru/dev/messenger/doc/ru/api-requests/chat-members
+
+        :param chat_id: Chat (channel) ID
+        :param members: The list of users who need to be made chat participants
+        :param admins: The list of users who need to be made chat administrators
+        :param subscribers: The list of users who need to be made subscribers of the channel
+        :param remove: The list of users to remove from the chat
+        :return: int: Created chat ID
+        """
         data = {"chat_id": chat_id}
         if members:
             data.update(members=[{"login": user.login} for user in members])
@@ -258,11 +285,28 @@ class Client:
         return data
 
     def get_file(self, file: File, save_path: str) -> str:
+        """
+        The method allows you to receive files that have been sent to chats.
+        url: https://yandex.ru/dev/messenger/doc/ru/api-requests/message-get-file
+
+        :param file: File class
+        :param save_path: The path where to save the file
+        :return: path
+        """
         file_path = f"{save_path}/{file.name}"
         data = api.get_file(self, file.id, file_path)
         return data
 
-    def delete_message(self, message_id: int, login: str = "", chat_id: str = ""):
+    def delete_message(self, message_id: int, login: str = "", chat_id: str = "") -> int:
+        """
+        This method allows you to delete messages from chats.
+        url: https://yandex.ru/dev/messenger/doc/ru/api-requests/message-delete
+
+        :param message_id: ID of the message to delete
+        :param login: User login
+        :param chat_id: Group chat ID
+        :return: Deleted message id
+        """
         if not chat_id and not login:
             raise Exception("Please provide login or chat_id")
         data = api.delete_message(
@@ -270,11 +314,27 @@ class Client:
         )
         return data
 
-    def get_user_link(self, login: str):
+    def get_user_link(self, login: str) -> dict:
+        """
+        The method allows you to get links that you can use to open a dialogue (private chat) with the user or call him.
+        url: https://yandex.ru/dev/messenger/doc/ru/api-requests/get-user-link
+
+        :param login: User login
+        :return: Information about links to the user
+        """
         data = api.get_user_link(self, login=login)
         return data
 
-    def send_file(self, path: str, login: str = "", chat_id: str = ""):
+    def send_file(self, path: str, login: str = "", chat_id: str = "") -> dict:
+        """
+        The method allows you to send files to private or group chats.
+        url: https://yandex.ru/dev/messenger/doc/ru/api-requests/message-send-file
+
+        :param path: The path to the file
+        :param login: User login
+        :param chat_id: Group chat ID
+        :return: Message id and file id
+        """
         if login:
             login = (None, login)
         if chat_id:
@@ -282,7 +342,16 @@ class Client:
         data = api.send_file(self, document=path, login=login, chat_id=chat_id)
         return data
 
-    def send_image(self, path: str, login: str = "", chat_id: str = ""):
+    def send_image(self, path: str, login: str = "", chat_id: str = "") -> dict:
+        """
+        The method allows you to send images to private or group chats.
+        url: https://yandex.ru/dev/messenger/doc/ru/api-requests/message-send-image
+
+        :param path: The path to the image
+        :param login: User login
+        :param chat_id: Group chat ID
+        :return: Message id
+        """
         if login:
             login = (None, login)
         if chat_id:
