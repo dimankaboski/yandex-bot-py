@@ -78,3 +78,15 @@ def get_user_name(message):
 def type_your_name(message):
     bot.send_message(f"Your name is {message.text}", login=message.user.login)
 ```
+
+### Send file or image
+Send file:
+```Python
+data = bot.send_file("files/test.txt", login="login@login.ru")
+```
+Send image:
+```Python
+data = bot.send_image("files/test.jpg", login="login@login.ru")
+```
+
+### Create a chat
