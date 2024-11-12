@@ -61,6 +61,16 @@ def test_run_handler(client, message):
     assert client._run_handler(start, message) == message.text
 
 
+def test_delete_handler(client, user):
+    def next_step():
+        ...
+    client.register_next_step_handler(user.login, next_step)
+    handlers = client.next_step_handler.get_handlers()
+    assert len(handlers) == 1
+    client.next_step_handler.delete_handler(user.login)
+    assert len(handlers) == 0
+
+
 def test_get_handler_for_message(client, json_message):
     @client.on_message(phrase="/hello")
     def hello(fix_message):
