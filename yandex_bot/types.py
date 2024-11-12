@@ -119,7 +119,7 @@ class Chat(JsonDeserializable, Dictionaryable, JsonSerializable):  # noqa
             # "avatar_url": self.avatar_url,
             "members": [member.to_dict() for member in self.members],
             "admins": [admin.to_dict() for admin in self.admins],
-            "subscribers": self.subscribers,
+            "subscribers": [subscriber.to_dict() for subscriber in self.subscribers]
         }
 
     def to_json(self):
