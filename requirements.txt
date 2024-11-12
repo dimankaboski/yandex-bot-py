@@ -1,3 +1,4 @@
 pytest
 requests
 python-dotenv
+pytest-cov

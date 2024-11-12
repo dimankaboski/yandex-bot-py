@@ -4,6 +4,11 @@ from yandex_bot import Button, Poll, Chat, User, Message, Client
 
 
 @pytest.fixture
+def json_message():
+    return {'message_id': 1111111111, 'timestamp': 52352323523, 'chat': {'type': 'private'}, 'from': {'id': '320fesf-gesg342-gsegse523-hrtyu67580', 'display_name': 'Display name', 'login': 'login@login.ru', 'robot': False}, 'update_id': 1242141241, 'callback_data': {'phrase': '/hello'}, 'text': 'Hello'}
+
+
+@pytest.fixture
 def user():
     return User(login="login@login.ru")
 
@@ -56,5 +61,14 @@ def test_run_handler(client, message):
     assert client._run_handler(start, message) == message.text
 
 
-def test_get_message_objects(client, message):
-    ...
+def test_get_handler_for_message(client, json_message):
+    @client.on_message(phrase="/hello")
+    def hello(fix_message):
+        return "handled"
+    assert client._get_handler_for_message(json_message=json_message) == hello
+
+
+def test_get_message_objects(client, json_message):
+    msg_obj = client._get_message_objects(message_json=json_message)
+    assert type(msg_obj) is Message
+    assert msg_obj.callback_data == {'phrase': '/hello'}
