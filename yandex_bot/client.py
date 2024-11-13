@@ -14,6 +14,7 @@ class Client:
         self.api_key = api_key
         self.handlers = []
         self.next_step_handler = MemoryStepHandler()
+        self.unhandled_message_handler = self._unhandled_message_handler
         self.is_closed = False
         self.last_update_id = 0
         self.ssl_verify = ssl_verify
@@ -25,6 +26,9 @@ class Client:
     def run(self):
         print("Bot initialized. Start polling...")
         self._start_polling()
+
+    def _unhandled_message_handler(self, message):
+        pass
 
     def _is_closed(self):
         return self.is_closed
@@ -52,10 +56,7 @@ class Client:
             self.last_update_id = json_message["update_id"]
             handler = self._get_handler_for_message(json_message)
             message: Message = self._get_message_objects(json_message)
-            if handler:
-                self._run_handler(handler, message)
-            else:
-                print(f"Unhandled message {message}")
+            self._run_handler(handler, message)
 
     def _get_handler_for_message(self, json_message: dict):
         next_step_handlers = self.next_step_handler.get_handlers()
@@ -74,7 +75,7 @@ class Client:
         for handler in self.handlers:
             if first_message_word == handler["phrase"]:
                 return handler["function"]
-        return None
+        return self.unhandled_message_handler
 
     def _start_polling(self):
         try:
@@ -93,6 +94,13 @@ class Client:
     def on_message(self, phrase):
         def decorator(handler):
             self.handlers.append(self._build_handler_dict(handler, phrase))
+            return handler
+
+        return decorator
+
+    def unhandled_message(self):
+        def decorator(handler):
+            self.unhandled_message_handler = handler
             return handler
 
         return decorator
