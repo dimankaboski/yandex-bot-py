@@ -82,6 +82,17 @@ def get_user_name(message):
 def type_your_name(message):
     bot.send_message(f"Your name is {message.text}", login=message.user.login)
 ```
+### Unhandled messages
+
+To process messages for which no handler is specified, use the decorator `@bot.unhandled_message()`. By default, messages without a handler are not processed in any way
+
+```Python
+@bot.unhandled_message()
+def unhandled(message: Message):
+    print(message)
+```
+
+
 
 ### Send file or image
 The method allows you to send files to private or group chats. 
