@@ -1,5 +1,4 @@
-import requests
-
+import re
 from time import sleep
 import threading
 
@@ -73,7 +72,7 @@ class Client:
         ):
             first_message_word = json_message.get("callback_data").get("phrase")
         for handler in self.handlers:
-            if first_message_word == handler["phrase"]:
+            if first_message_word == handler["phrase"] or re.search(handler["phrase"], first_message_word):
                 return handler["function"]
         return self.unhandled_message_handler
 
