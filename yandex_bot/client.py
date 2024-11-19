@@ -66,7 +66,7 @@ class Client:
                 return next_step_handler
         first_message_word = json_message.get("text", "").split(" ")[0]
         if not first_message_word:
-            return None
+            return self.unhandled_message_handler
         if json_message.get("callback_data") and json_message.get("callback_data").get(
                 "phrase"
         ):
