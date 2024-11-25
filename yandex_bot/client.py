@@ -57,7 +57,6 @@ class Client:
 
     def _get_updates(self):
         data = api.get_updates(self, self.last_update_id + 1)
-        logger.warning(data)
         for json_message in data:
             self.last_update_id = json_message["update_id"]
             if json_message.get("chat").get("type") == "channel" and json_message["chat"]["id"] in self.exclude_channels:
