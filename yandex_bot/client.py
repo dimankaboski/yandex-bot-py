@@ -1,3 +1,4 @@
+import logging
 import re
 from time import sleep
 import threading
@@ -7,9 +8,11 @@ import yandex_bot.apihelpers as api
 from yandex_bot.types import User, Message, Chat, Button, File, Image
 from yandex_bot.handlers import MemoryStepHandler
 
+logger = logging.getLogger(__name__)
+
 
 class Client:
-    def __init__(self, api_key: str, ssl_verify: bool = True, timeout: int = 1):
+    def __init__(self, api_key: str, exclude_channels = None, ssl_verify: bool = True, timeout: int = 1):
         self.api_key = api_key
         self.handlers = []
         self.next_step_handler = MemoryStepHandler()
@@ -18,12 +21,15 @@ class Client:
         self.last_update_id = 0
         self.ssl_verify = ssl_verify
         self.timeout = timeout
+        self.exclude_channels = exclude_channels
+        if exclude_channels is None:
+            self.exclude_channels = []
 
     def _build_handler_dict(self, handler, phrase):
         return {"function": handler, "phrase": phrase}
 
     def run(self):
-        print("Bot initialized. Start polling...")
+        logger.info("Bot initialized. Start polling...")
         self._start_polling()
 
     def _unhandled_message_handler(self, message):
@@ -51,8 +57,11 @@ class Client:
 
     def _get_updates(self):
         data = api.get_updates(self, self.last_update_id + 1)
+        logger.warning(data)
         for json_message in data:
             self.last_update_id = json_message["update_id"]
+            if json_message.get("chat").get("type") == "channel" and json_message["chat"]["id"] in self.exclude_channels:
+                return None
             handler = self._get_handler_for_message(json_message)
             message: Message = self._get_message_objects(json_message)
             self._run_handler(handler, message)
@@ -84,7 +93,7 @@ class Client:
                 ).start()
                 sleep(self.timeout)
         except KeyboardInterrupt:
-            print("Exit Bot. Good bye.")
+            logger.info("Exit Bot. Good bye.")
             self.is_closed = True
 
     def register_next_step_handler(self, user_login: str, callback):
